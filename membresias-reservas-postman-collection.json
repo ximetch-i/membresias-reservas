@@ -1,0 +1,367 @@
+{
+  "info": {
+    "name": "Membresias y Reservas - Microservicio 3",
+    "description": "Colección de pruebas CRUD para el microservicio de membresías y reservas (Node.js + MongoDB, puerto 8003)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8003",
+      "type": "string"
+    },
+    {
+      "key": "cliente_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Healthcheck",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/",
+          "host": ["{{base_url}}"],
+          "path": [""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1. Crear cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const data = pm.response.json();",
+              "    pm.collectionVariables.set('cliente_id', data._id);",
+              "    console.log('cliente_id guardado:', data._id);",
+              "}",
+              "",
+              "pm.test('Status code es 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Respuesta incluye _id, nombre y plan', function () {",
+              "    const data = pm.response.json();",
+              "    pm.expect(data).to.have.property('_id');",
+              "    pm.expect(data).to.have.property('nombre', 'Ana Pérez');",
+              "    pm.expect(data).to.have.property('plan', 'premium');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Ana Pérez\",\n  \"plan\": \"premium\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/clientes",
+          "host": ["{{base_url}}"],
+          "path": ["clientes"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Listar todos los clientes",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('La respuesta es un arreglo', function () {",
+              "    pm.expect(pm.response.json()).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes",
+          "host": ["{{base_url}}"],
+          "path": ["clientes"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Obtener un cliente por id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('El id coincide con el cliente_id guardado', function () {",
+              "    const data = pm.response.json();",
+              "    pm.expect(data._id).to.eql(pm.collectionVariables.get('cliente_id'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["clientes", "{{cliente_id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3b. Obtener cliente con id inválido (debe dar 400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 400', function () {",
+              "    pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/id-invalido-123",
+          "host": ["{{base_url}}"],
+          "path": ["clientes", "id-invalido-123"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3c. Obtener cliente inexistente (debe dar 404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 404', function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/000000000000000000000000",
+          "host": ["{{base_url}}"],
+          "path": ["clientes", "000000000000000000000000"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Actualizar plan de un cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('El plan fue actualizado a básico', function () {",
+              "    const data = pm.response.json();",
+              "    pm.expect(data.plan).to.eql('básico');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plan\": \"básico\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["clientes", "{{cliente_id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Agregar una reserva",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('El cliente ahora tiene al menos una reserva', function () {",
+              "    const data = pm.response.json();",
+              "    pm.expect(data.reservas.length).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"mesa\": 3,\n  \"horario\": \"2026-09-10T18:00\",\n  \"estado\": \"confirmada\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}/reservas",
+          "host": ["{{base_url}}"],
+          "path": ["clientes", "{{cliente_id}}", "reservas"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Listar reservas de un cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('La respuesta es un arreglo de reservas', function () {",
+              "    const data = pm.response.json();",
+              "    pm.expect(data).to.be.an('array');",
+              "    pm.expect(data.length).to.be.above(0);",
+              "    pm.expect(data[0]).to.have.property('mesa');",
+              "    pm.expect(data[0]).to.have.property('horario');",
+              "    pm.expect(data[0]).to.have.property('estado');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}/reservas",
+          "host": ["{{base_url}}"],
+          "path": ["clientes", "{{cliente_id}}", "reservas"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Eliminar cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Respuesta confirma eliminación', function () {",
+              "    const data = pm.response.json();",
+              "    pm.expect(data).to.have.property('mensaje');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["clientes", "{{cliente_id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Confirmar eliminación (debe dar 404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code es 404 porque el cliente ya fue eliminado', function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["clientes", "{{cliente_id}}"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
